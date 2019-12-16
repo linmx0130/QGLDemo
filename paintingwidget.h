@@ -20,11 +20,11 @@ protected:
     void resizeGL(int w, int h);
     void fillColorBuffer();
 private:
-    QOpenGLBuffer *m_vbo;
+    QOpenGLBuffer *m_vbo, *m_cbo;
     QOpenGLVertexArrayObject *m_vao;
     QOpenGLShaderProgram *m_shader;
     GLfloat colorBuffer[3];
-    GLfloat vertexData[3 * 6];
+    GLfloat vertexData[3 * 3];
 };
 
 #endif // PAINTINGWIDGET_H

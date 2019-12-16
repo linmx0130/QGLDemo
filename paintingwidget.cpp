@@ -21,9 +21,9 @@ static const char* FRAGMENT_SHADER_CODE =
 PaintingWidget::PaintingWidget(QWidget* parent):
     QOpenGLWidget (parent), m_vbo(nullptr), m_vao(nullptr), m_shader(nullptr){
     const GLfloat VERTEX_INIT_DATA[] = {
-           -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-           0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-           -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f
+           -0.5f, -0.5f, 0.0f,
+           0.5f, -0.5f, 0.0f,
+           -0.5f, 0.5f, 0.0f
        };
     memcpy(this->vertexData, VERTEX_INIT_DATA, sizeof(this->vertexData));
     memset(this->colorBuffer, 0, sizeof(this->colorBuffer));
@@ -38,7 +38,9 @@ void PaintingWidget::setColor(GLfloat r, GLfloat g, GLfloat b)
     colorBuffer[0] = r;
     colorBuffer[1] = g;
     colorBuffer[2] = b;
+    m_cbo->bind();
     fillColorBuffer();
+    m_cbo->release();
     update();
 }
 
@@ -56,17 +58,22 @@ void PaintingWidget::initializeGL()
     // 初始化VAO
     m_vao = new QOpenGLVertexArrayObject();
     m_vbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
+    m_cbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
     m_vao->create();
     m_vao->bind();
     m_vbo->create();
     m_vbo->bind();
     m_vbo->allocate(this->vertexData, 3 * 6 * sizeof(GLfloat));
     f->glEnableVertexAttribArray(0);
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), 0);
-    f->glEnableVertexAttribArray(1);
-    f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
-                             (void*)(3 * sizeof(GLfloat)));
+    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
     m_vbo->release();
+    m_cbo->create();
+    m_cbo->bind();
+    m_cbo->allocate(3*3*sizeof(GLfloat));
+    fillColorBuffer();
+    f->glEnableVertexAttribArray(1);
+    f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
+    m_cbo->release();
     m_vao->release();
 }
 
@@ -90,11 +97,10 @@ void PaintingWidget::resizeGL(int w, int h)
 
 void PaintingWidget::fillColorBuffer()
 {
+    GLfloat colorData[3*3];
     for (int i=0;i<3;++i) {
-        memcpy(&this->vertexData[i*6 + 3], this->colorBuffer, 3 * sizeof(GLfloat));
+        memcpy(&colorData[i*3], this->colorBuffer, 3 * sizeof(GLfloat));
     }
-    m_vbo->bind();
-    m_vbo->write(0, this->vertexData, 3*6*sizeof(GLfloat));
-    m_vbo->release();
+    m_cbo->write(0, colorData, 3*3*sizeof(GLfloat));
 }
 

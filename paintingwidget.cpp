@@ -55,7 +55,6 @@ void PaintingWidget::initializeGL()
     } else {
         qDebug("Shaders link failed!");
     }
-    // 初始化VAO
     m_vao = new QOpenGLVertexArrayObject();
     m_vbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
     m_cbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
@@ -63,7 +62,7 @@ void PaintingWidget::initializeGL()
     m_vao->bind();
     m_vbo->create();
     m_vbo->bind();
-    m_vbo->allocate(this->vertexData, 3 * 6 * sizeof(GLfloat));
+    m_vbo->allocate(this->vertexData, 3 * 3 * sizeof(GLfloat));
     f->glEnableVertexAttribArray(0);
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
     m_vbo->release();

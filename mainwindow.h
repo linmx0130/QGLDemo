@@ -1,14 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include <QMainWindow>
 #include <QVBoxLayout>
 #include <QComboBox>
 #include "paintingwidget.h"
-#include <utility>
-#include <vector>
-using std::pair;
-using std::vector;
 
 class MainWindow : public QWidget
 {

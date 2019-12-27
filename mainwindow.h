@@ -12,11 +12,8 @@ class MainWindow : public QWidget
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
-private slots:
-    void onComboBoxSelected(const QString &text);
 private:
     QVBoxLayout *m_layout;
-    QComboBox *m_combo_box;
     PaintingWidget *m_painting;
 };
 

@@ -13,18 +13,18 @@ class PaintingWidget : public QOpenGLWidget
 public:
     PaintingWidget(QWidget *partent);
     ~PaintingWidget();
-    void setColor(GLfloat r, GLfloat g, GLfloat b);
 protected:
     void initializeGL();
     void paintGL();
     void resizeGL(int w, int h);
-    void fillColorBuffer();
+
 private:
     QOpenGLBuffer *m_vbo, *m_cbo;
     QOpenGLVertexArrayObject *m_vao;
     QOpenGLShaderProgram *m_shader;
-    GLfloat colorBuffer[3];
-    GLfloat vertexData[3 * 3];
+    float aspectRatio;
+    GLfloat colorBuffer[4 * 3 *3];
+    GLfloat vertexData[4 * 3 * 3];
 };
 
 #endif // PAINTINGWIDGET_H

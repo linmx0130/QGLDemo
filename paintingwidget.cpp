@@ -20,7 +20,8 @@ static const char* FRAGMENT_SHADER_CODE =
         "}\n";
 
 PaintingWidget::PaintingWidget(QWidget* parent):
-    QOpenGLWidget (parent), m_vbo(nullptr), m_vao(nullptr), m_shader(nullptr){
+    QOpenGLWidget (parent), camera_pos(0.0f, 3.0f, 0.0f),
+    m_vbo(nullptr), m_vao(nullptr), m_shader(nullptr), m_timer(nullptr){
     const GLfloat VERTEX_INIT_DATA[] = {
            //face 1
            -0.5f, 0.0f, -0.2887f,
@@ -56,6 +57,9 @@ PaintingWidget::PaintingWidget(QWidget* parent):
     memcpy(this->vertexData, VERTEX_INIT_DATA, sizeof(this->vertexData));
     memcpy(this->colorBuffer, COLOR_INIT_DATA, sizeof(this->colorBuffer));
     aspectRatio = (float) 800 / 600;
+    m_timer = new QElapsedTimer;
+    m_timer->start();
+    setFocusPolicy(Qt::StrongFocus);
 }
 PaintingWidget::~PaintingWidget(){
 
@@ -103,11 +107,18 @@ void PaintingWidget::paintGL()
     m_shader->bind();
     QMatrix4x4 mvp;
     mvp.perspective(45.0f, this->aspectRatio, 0.1f, 100.0f);
-    mvp.lookAt(QVector3D(0.0f, 3.0f, 0.0f), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(1.0f, 0.0f, 0.0f));
+    QVector3D center(camera_pos);
+    center.setY(0);
+    mvp.lookAt(camera_pos, center, QVector3D(1.0f, 0.0f, 0.0f));
+
+    float time_in_second = (float)m_timer->elapsed() / 1000;
+    mvp.rotate(30.0f * time_in_second, QVector3D(0.7f, 0.5f, 0.2f));
+
     m_shader->setUniformValue(m_shader->uniformLocation("MVP"), mvp);
     f->glDrawArrays(GL_TRIANGLES, 0, 4 * 3);
     m_shader->release();
     m_vao->release();
+    this->update();
 }
 
 void PaintingWidget::resizeGL(int w, int h)
@@ -115,4 +126,26 @@ void PaintingWidget::resizeGL(int w, int h)
     aspectRatio = (float)w / h;
 }
 
-
+void PaintingWidget::keyPressEvent(QKeyEvent *keyEvent){
+    switch (keyEvent->key()){
+        case Qt::Key_Right:
+            camera_pos.setZ(camera_pos.z() + 0.1f);
+            break;
+        case Qt::Key_Left:
+            camera_pos.setZ(camera_pos.z() - 0.1f);
+            break;
+        case Qt::Key_Up:
+            camera_pos.setX(camera_pos.x() + 0.1f);
+            break;
+        case Qt::Key_Down:
+            camera_pos.setX(camera_pos.x() - 0.1f);
+            break;
+        case Qt::Key_Plus:
+            camera_pos.setY(camera_pos.y() + 0.1f);
+            break;
+        case Qt::Key_Minus:
+            camera_pos.setY(camera_pos.y() - 0.1f);
+            break;
+    }
+    update();
+}

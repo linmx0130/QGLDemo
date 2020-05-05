@@ -1,5 +1,7 @@
 <RCC>
-    <qresource prefix="/imgs"/>
+    <qresource prefix="/imgs">
+        <file>lenna.png</file>
+    </qresource>
     <qresource prefix="/shaders">
         <file>fragmentShader.shader</file>
         <file>vertexShader.shader</file>

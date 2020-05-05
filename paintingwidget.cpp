@@ -2,7 +2,7 @@
 
 PaintingWidget::PaintingWidget(QWidget* parent):
     QOpenGLWidget (parent), camera_pos(0.0f, 3.0f, 0.0f),
-    m_vbo(nullptr), m_vao(nullptr), m_shader(nullptr), m_timer(nullptr){
+    m_vbo(nullptr), m_vao(nullptr), m_shader(nullptr), m_timer(nullptr), m_texture(nullptr){
     const GLfloat VERTEX_INIT_DATA[] = {
            //face 1
            -0.5f, 0.0f, -0.2887f,
@@ -24,19 +24,26 @@ PaintingWidget::PaintingWidget(QWidget* parent):
     const GLfloat COLOR_INIT_DATA[] = {
         1.0f, 0.0f, 0.0f,
         1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,
         0.0f, 1.0f, 0.0f,
         0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,
         0.0f, 0.0f, 1.0f,
         0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+       };
+    const GLfloat UV_INIT_DATA[] = {
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
        };
     memcpy(this->vertexData, VERTEX_INIT_DATA, sizeof(this->vertexData));
     memcpy(this->colorBuffer, COLOR_INIT_DATA, sizeof(this->colorBuffer));
+    memcpy(this->uvData, UV_INIT_DATA, sizeof(this->uvData));
     aspectRatio = (float) 800 / 600;
     m_timer = new QElapsedTimer;
     m_timer->start();
@@ -51,6 +58,7 @@ void PaintingWidget::initializeGL()
 {
     QOpenGLFunctions *f = this->context()->functions();
     f->glEnable(GL_DEPTH_TEST);
+    m_texture = new QOpenGLTexture(QImage(":/imgs/lenna.png"));
     m_shader = new QOpenGLShaderProgram();
     m_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertexShader.shader");
     m_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragmentShader.shader");
@@ -62,6 +70,7 @@ void PaintingWidget::initializeGL()
     m_vao = new QOpenGLVertexArrayObject();
     m_vbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
     m_cbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
+    m_uvbo = new QOpenGLBuffer(QOpenGLBuffer::Type::VertexBuffer);
     m_vao->create();
     m_vao->bind();
     m_vbo->create();
@@ -76,6 +85,12 @@ void PaintingWidget::initializeGL()
     f->glEnableVertexAttribArray(1);
     f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
     m_cbo->release();
+    m_uvbo->create();
+    m_uvbo->bind();
+    m_uvbo->allocate(this->uvData, 4 * 3 * 2 * sizeof(GLfloat));
+    f->glEnableVertexAttribArray(2);
+    f->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), 0);
+    m_uvbo->release();
     m_vao->release();
 }
 
@@ -86,6 +101,7 @@ void PaintingWidget::paintGL()
     f->glClearColor(0.0f, 0.2f, 0.0f, 1.0f);
     m_vao->bind();
     m_shader->bind();
+    m_texture->bind();
     QMatrix4x4 mvp;
     mvp.perspective(45.0f, this->aspectRatio, 0.1f, 100.0f);
     QVector3D center(camera_pos);
@@ -97,6 +113,7 @@ void PaintingWidget::paintGL()
 
     m_shader->setUniformValue(m_shader->uniformLocation("MVP"), mvp);
     f->glDrawArrays(GL_TRIANGLES, 0, 4 * 3);
+    m_texture->release();
     m_shader->release();
     m_vao->release();
     this->update();

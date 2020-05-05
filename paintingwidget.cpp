@@ -1,24 +1,5 @@
 #include "paintingwidget.h"
 
-static const char* VERTEX_SHADER_CODE =
-        "#version 330 \n"
-        "layout(location = 0) in vec3 posVertex;\n"
-        "layout(location = 1) in vec3 colVertex;\n"
-        "uniform mat4 MVP;\n"
-        "out vec4 cols;\n"
-        "void main() {\n"
-        "  gl_Position = MVP * vec4(posVertex, 1.0f);\n"
-        "  cols = vec4(colVertex, 1.0f);\n"
-        "}\n";
-
-static const char* FRAGMENT_SHADER_CODE =
-        "#version 330\n"
-        "in vec4 cols;\n"
-        "out vec4 fragColor;\n"
-        "void main() {\n"
-        "  fragColor = cols;\n"
-        "}\n";
-
 PaintingWidget::PaintingWidget(QWidget* parent):
     QOpenGLWidget (parent), camera_pos(0.0f, 3.0f, 0.0f),
     m_vbo(nullptr), m_vao(nullptr), m_shader(nullptr), m_timer(nullptr){
@@ -71,8 +52,8 @@ void PaintingWidget::initializeGL()
     QOpenGLFunctions *f = this->context()->functions();
     f->glEnable(GL_DEPTH_TEST);
     m_shader = new QOpenGLShaderProgram();
-    m_shader->addShaderFromSourceCode(QOpenGLShader::Vertex, VERTEX_SHADER_CODE);
-    m_shader->addShaderFromSourceCode(QOpenGLShader::Fragment, FRAGMENT_SHADER_CODE);
+    m_shader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertexShader.shader");
+    m_shader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragmentShader.shader");
     if (m_shader->link()) {
         qDebug("Shaders link success.");
     } else {
